@@ -2,6 +2,8 @@
 
 Kernel module: transparent swap of DDC/CI VCP **0x10** (brightness) and **0x12** (contrast) for **HSJ Bimawen** (`product 0x0133`) on Intel **DP AUX** adapters (`AUX …/DDI …`).
 
+**Note:** Much of this code was generated with AI (large language models). Treat it as experimental: read the sources and run the checks on real hardware.
+
 ## How it works
 
 The Bimawen firmware wires DDC/CI brightness to VCP **0x12** and contrast to **0x10** (opposite of the DDC/CI spec). Userspace (`ddcutil`, KDE/libddcutil) talks to VCP **0x10** for brightness; without help, writes go to the wrong control.
