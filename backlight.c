@@ -7,6 +7,8 @@
 
 #include <linux/backlight.h>
 #include <linux/delay.h>
+#include <linux/module.h>
+#include <linux/moduleparam.h>
 #include <linux/i2c.h>
 #include <linux/jiffies.h>
 #include <linux/mutex.h>
@@ -14,6 +16,11 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/sysfs.h>
+
+static bool backlight = true;
+module_param(backlight, bool, 0644);
+MODULE_PARM_DESC(backlight,
+		 "Register sysfs backlight (0 = DDC VCP remap only)");
 
 struct i2c_bimawen_bl_ctx {
 	struct i2c_adapter *adap;
@@ -243,6 +250,8 @@ static const struct i2c_bimawen_retry_spec bl_retry_spec = {
 
 bool i2c_bimawen_bl_attach(struct i2c_adapter *adap, void **slot)
 {
+	if (!backlight)
+		return true;
 	i2c_bimawen_retry_cancel_ctx(slot);
 	if (bl_register(adap, slot))
 		return true;

@@ -70,6 +70,7 @@ sudo modprobe i2c_bimawen
 ## Params
 
 - `adapter_nr=6` — limit to one bus (optional)
+- `backlight=0` — only VCP **0x10/0x12** remap over I²C; no **`/sys/class/backlight/i2c_bimawen-*`** (use `ddcutil`, Plasma DDC, or another backlight driver). **Recommended for KDE Plasma** on laptops — see below.
 - `edid_relaxed=1` — hook HSJ `0x0133` when the EDID has no **Bimawen** name text. Writing `1` rescans adapters. Writing `0` drops current hooks and scans again under the strict name match. **Risk:** any other HSJ `0x0133` panel gets the same VCP swap (brightness/contrast crossed).
 - If EDID read fails at load (DP training), the module retries for ~5 s; then replug or `modprobe` again.
 
@@ -91,10 +92,18 @@ brightnessctl -l
 brightnessctl -d i2c_bimawen-6 set 40
 ```
 
-## KDE slider vs brightnessctl
+## KDE Plasma vs brightnessctl
 
-`brightnessctl` uses **`/sys/class/backlight/i2c_bimawen-6`** (kernel `bl_update`).  
-Plasma’s per-monitor slider on **external** displays usually goes through **libddcutil** → `/dev/i2c-6` (DDC), not sysfs. After DDC SET/GET the module updates sysfs `brightness` so **brightnessctl** tracks KDE. The Plasma slider can still show an old percent until PowerDevil does its own DDC read (it caches the UI value). Disabling per-monitor **DDC/CI brightness** in Display settings makes Plasma follow sysfs when linked. Padded read buffers need correct checksum offset (`ddc_frame_len()` in `ddc.c`).
+On a **laptop with an external Bimawen**, loading the module with the default **`backlight=1`** adds **`i2c_bimawen-N`** next to the **built-in** entry under **`/sys/class/backlight/`**. KDE PowerDevil often drives laptop brightness through that sysfs class; with two nodes present, changing the **internal** slider can also move the **external** panel (wrong device or merged sysfs behaviour). For Plasma, prefer **DDC only**:
+
+```bash
+# /etc/modprobe.d/i2c_bimawen.conf
+options i2c_bimawen backlight=0
+```
+
+VCP remap still applies on `/dev/i2c-*`; per-monitor sliders in Display settings use **libddcutil** (DDC), not this module’s sysfs node.
+
+With **`backlight=1`** (e.g. headless desktop or you want **brightnessctl**), `brightnessctl` uses **`/sys/class/backlight/i2c_bimawen-6`** (kernel `bl_update`). Plasma’s per-monitor slider on **external** displays usually goes through **libddcutil** → `/dev/i2c-6` (DDC), not sysfs. After DDC SET/GET the module updates sysfs `brightness` so **brightnessctl** tracks KDE. The Plasma slider can still show an old percent until PowerDevil does its own DDC read (it caches the UI value). Disabling per-monitor **DDC/CI brightness** in Display settings makes Plasma follow sysfs when linked. Padded read buffers need correct checksum offset (`ddc_frame_len()` in `ddc.c`).
 
 After reload, check that the backlight sysfs node sits under the connector (`…/card0-DP-1/.../i2c_bimawen-6`). If the slider is still bad:
 
