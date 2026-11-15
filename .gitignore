@@ -1,0 +1,23 @@
+# kbuild
+*.ko
+*.o
+*.mod
+*.mod.c
+*.mod.o
+.module-common.o
+Module.symvers
+modules.order
+*.cmd
+.tmp_versions/
+
+# userspace test binaries (sources: test-ddc.c, make check)
+/test-ddc
+
+# makepkg / release
+/pkg/
+/src/
+archlinux/pkg/
+archlinux/src/
+*.pkg.tar*
+i2c_bimawen-*.tar.gz
+i2c_bimawen-*.tar.gz

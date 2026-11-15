@@ -1,0 +1,24 @@
+_i2c_bimawen_dkms_ver() {
+  ls -d /usr/src/i2c_bimawen-* 2>/dev/null | sort -V | tail -1 | sed 's|.*/i2c_bimawen-||'
+}
+
+post_install() {
+  dkms install -m i2c_bimawen -v "$(_i2c_bimawen_dkms_ver)" --force
+}
+
+pre_upgrade() {
+  local ver
+  ver=$(_i2c_bimawen_dkms_ver)
+  [ -n "$ver" ] && dkms remove -m i2c_bimawen -v "$ver" --all 2>/dev/null || true
+  rm -rf /usr/src/i2c_bimawen-*
+}
+
+post_upgrade() {
+  dkms install -m i2c_bimawen -v "$(_i2c_bimawen_dkms_ver)" --force
+}
+
+pre_remove() {
+  local ver
+  ver=$(_i2c_bimawen_dkms_ver)
+  [ -n "$ver" ] && dkms remove -m i2c_bimawen -v "$ver" --all 2>/dev/null || true
+}

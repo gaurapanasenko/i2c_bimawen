@@ -1,0 +1,29 @@
+# Maintainer: Yehor Panasenko <yehor.panasenko@gmail.com>
+pkgname=i2c_bimawen-dkms
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="DDC/CI VCP 0x10/0x12 swap for HSJ Bimawen (i915 DP AUX)"
+arch=('x86_64')
+# url: set to public git remote before publishing (see README Arch)
+url=""
+license=('GPL-2.0-only')
+depends=('dkms')
+optdepends=('linux-zen-headers: build for linux-zen'
+            'linux-headers: build for stock linux')
+provides=("${pkgname%-dkms}=${pkgver}")
+conflicts=("${pkgname%-dkms}")
+install=${pkgname}.install
+source=("i2c_bimawen-${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+  local _ver="${pkgver}"
+  local _dest="$pkgdir/usr/src/i2c_bimawen-${_ver}"
+
+  install -dm755 "$_dest"
+  cp -a "$srcdir"/*.[ch] "$srcdir"/Makefile "$srcdir"/LICENSE "$_dest/"
+  sed "s/@PKGVER@/${_ver}/g" "$srcdir/dkms.conf" > "$_dest/dkms.conf"
+
+  install -Dm644 "$srcdir/i2c_bimawen.conf" \
+    "$pkgdir/usr/lib/modules-load.d/i2c_bimawen.conf"
+}
